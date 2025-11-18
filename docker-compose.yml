@@ -1,0 +1,134 @@
+version: '3.8'
+
+services:
+  # Базы данных
+  reviews-db:
+    image: postgres:13
+    environment:
+      - POSTGRES_DB=reviews_db
+      - POSTGRES_USER=cinema_user
+      - POSTGRES_PASSWORD=cinema_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - reviews_data:/var/lib/postgresql/data
+      - ./init-databases.sql:/docker-entrypoint-initdb.d/init.sql
+
+  users-db:
+    image: postgres:13
+    environment:
+      - POSTGRES_DB=users_db
+      - POSTGRES_USER=cinema_user
+      - POSTGRES_PASSWORD=cinema_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - users_data:/var/lib/postgresql/data
+
+  bonuses-db:
+    image: postgres:13
+    environment:
+      - POSTGRES_DB=bonuses_db
+      - POSTGRES_USER=cinema_user
+      - POSTGRES_PASSWORD=cinema_password
+    ports:
+      - "5434:5432"
+    volumes:
+      - bonuses_data:/var/lib/postgresql/data
+
+  payments-db:
+    image: postgres:13
+    environment:
+      - POSTGRES_DB=payments_db
+      - POSTGRES_USER=cinema_user
+      - POSTGRES_PASSWORD=cinema_password
+    ports:
+      - "5435:5432"
+    volumes:
+      - payments_data:/var/lib/postgresql/data
+
+  notifications-db:
+    image: postgres:13
+    environment:
+      - POSTGRES_DB=notifications_db
+      - POSTGRES_USER=cinema_user
+      - POSTGRES_PASSWORD=cinema_password
+    ports:
+      - "5436:5432"
+    volumes:
+      - notifications_data:/var/lib/postgresql/data
+
+  movies-db:
+    image: postgres:13
+    environment:
+      - POSTGRES_DB=movies_db
+      - POSTGRES_USER=cinema_user
+      - POSTGRES_PASSWORD=cinema_password
+    ports:
+      - "5437:5432"
+    volumes:
+      - movies_data:/var/lib/postgresql/data
+
+  # Микросервисы
+  reviews-service:
+    build: ./reviews-service
+    ports:
+      - "8001:8000"
+    environment:
+      - DATABASE_URL=postgresql://cinema_user:cinema_password@reviews-db:5432/reviews_db
+    depends_on:
+      - reviews-db
+
+  users-service:
+    build: ./users-service
+    ports:
+      - "8002:8000"
+    environment:
+      - DATABASE_URL=postgresql://cinema_user:cinema_password@users-db:5432/users_db
+      - JWT_SECRET=your-super-secret-jwt-key-2024
+    depends_on:
+      - users-db
+
+  bonuses-service:
+    build: ./bonuses-service
+    ports:
+      - "8003:8000"
+    environment:
+      - DATABASE_URL=postgresql://cinema_user:cinema_password@bonuses-db:5432/bonuses_db
+    depends_on:
+      - bonuses-db
+
+  payments-service:
+    build: ./payments-service
+    ports:
+      - "8004:8000"
+    environment:
+      - DATABASE_URL=postgresql://cinema_user:cinema_password@payments-db:5432/payments_db
+    depends_on:
+      - payments-db
+
+  notifications-service:
+    build: ./notifications-service
+    ports:
+      - "8005:8000"
+    environment:
+      - DATABASE_URL=postgresql://cinema_user:cinema_password@notifications-db:5432/notifications_db
+    depends_on:
+      - notifications-db
+
+  movies-service:
+    build: ./movies-service
+    ports:
+      - "8006:8000"
+    environment:
+      - DATABASE_URL=postgresql://cinema_user:cinema_password@movies-db:5432/movies_db
+    depends_on:
+      - movies-db
+
+volumes:
+  reviews_data:
+  users_data:
+  bonuses_data:
+  payments_data:
+  notifications_data:
+  movies_data:
