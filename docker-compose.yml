@@ -71,7 +71,7 @@ services:
 
   # Микросервисы
   reviews-service:
-    build: ./reviews-service
+    build: reviews_service
     ports:
       - "8001:8000"
     environment:
@@ -80,7 +80,7 @@ services:
       - reviews-db
 
   users-service:
-    build: ./users-service
+    build: users_service
     ports:
       - "8002:8000"
     environment:
@@ -99,7 +99,7 @@ services:
       - bonuses-db
 
   payments-service:
-    build: ./payments-service
+    build: payments_service
     ports:
       - "8004:8000"
     environment:
@@ -108,7 +108,7 @@ services:
       - payments-db
 
   notifications-service:
-    build: ./notifications-service
+    build: notifications_service
     ports:
       - "8005:8000"
     environment:
