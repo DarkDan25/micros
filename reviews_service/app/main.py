@@ -5,7 +5,7 @@ from .database import init_db
 app = FastAPI(
     title="Reviews Service",
     description="Микросервис для управления отзывами о фильмах",
-    version="1.0.0"
+    version="1.1.0"
 )
 
 @app.on_event("startup")

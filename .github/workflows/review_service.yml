@@ -1,0 +1,52 @@
+name: Zhukov Reviews Service CI/CD (Yandex Cloud)
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'reviews_service/**'
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - 'reviews_service/**'
+
+jobs:
+  build-and-push-to-yc:
+    name: Build and Push to YC Registry
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        path: 'micros'
+
+    - name: Login to YC Registry
+      uses: docker/login-action@v3.0.0
+      with:
+        registry: cr.yandex
+        username: json_key
+        password: ${{ secrets.YC_KEYS }}
+
+    - name: Build and push Docker image
+      working-directory: ./micros/reviews_service
+      run: |
+        docker build . --tag cr.yandex/${{ secrets.YC_REGISTRY_ID }}/reviews-service:latest
+        docker push cr.yandex/${{ secrets.YC_REGISTRY_ID }}/reviews-service:latest
+
+  deploy:
+    name: Deploy to Serverless
+    runs-on: ubuntu-latest
+    needs: [build-and-push-to-yc]
+
+    steps:
+    - name: Deploy serverless container
+      uses: yc-actions/yc-sls-container-deploy@v1
+      with:
+        yc-sa-json-credentials: ${{ secrets.YC_KEYS }}
+        container-name: ${{ secrets.YC_CONTAINER_NAME }}
+        folder-id: ${{ secrets.YC_FOLDER_ID }}
+        revision-image-url: cr.yandex/${{ secrets.YC_REGISTRY_ID }}/reviews-service:latest
+        revision-service-account-id: ${{ secrets.YC_SA_ID }}
+        revision-env: |
+          DATABASE_URL=${{ secrets.ENV_DATABASE_URL }}

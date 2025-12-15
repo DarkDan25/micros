@@ -47,7 +47,7 @@ class ReviewService:
         review = self.review_repo.get_review_by_id(review_id)
 
         if review.user_id != user_id:
-            raise PermissionError("User can only delete their own reviews")
+            raise PermissionError("User can only delete their own reviews!")
 
         review.status = ReviewStatus.DELETED
         review.updated_at = datetime.now()
