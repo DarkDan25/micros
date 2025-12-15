@@ -82,4 +82,4 @@ class UserService:
         except ExpiredSignatureError:
             raise ValueError("Token expired")
         except JWTError:
-            raise ValueError("Invalid token")
+            raise ValueError("Invalid token!")
