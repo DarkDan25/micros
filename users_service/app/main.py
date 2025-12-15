@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import FastAPI, Request
 from prometheus_client import Counter, Histogram, make_asgi_app
 from .endpoints.user_router import user_router
@@ -29,6 +31,13 @@ APP_INFO = Counter(
 )
 APP_INFO.labels(app_name="users-service", version="1.1.0").inc(0)
 
+logging.basicConfig(
+    filename="app.log",
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
+
 @app.on_event("startup")
 def startup():
     init_db()
@@ -56,6 +65,13 @@ async def monitor_requests(request: Request, call_next):
         status_code=str(response.status_code)
     ).inc()
 
+    return response
+
+async def log_requests(request: Request, call_next):
+    body = await request.body()  # опционально, если нужен payload
+    logger.info(f"Запрос: {request.method} {request.url.path} | Тело: {body.decode()}")
+    response = await call_next(request)
+    logger.info(f"Ответ: {response.status_code} для {request.method} {request.url.path}")
     return response
 
 app.include_router(user_router, prefix="/api")
